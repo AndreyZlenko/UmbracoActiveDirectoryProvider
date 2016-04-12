@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <title>Active Directory Providers</title>
+    <id>UmbracoActiveDirectoryProvider</id>
+    <version>1.0.0</version>
+    <authors>zzz</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Umbraco Active Directory Provider</description>
+    <summary>The Active Directory Providers package allows Umbraco developers to authenticate and authorise Umbraco Users and Members against an Active Directory instance.</summary>
+    <releaseNotes>Initial NuGet package release.</releaseNotes>
+    <copyright>Copyright 2016</copyright>
+    <tags>umbraco active directory provider</tags>
+    <dependencies>
+      <dependency id="UmbracoCms.Core" version="7.4.2" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\UmbracoActiveDirectoryProvider\bin\UmbracoActiveDirectoryProvider.dll" target="lib\UmbracoActiveDirectoryProvider.dll" />
+  </files>
+</package>

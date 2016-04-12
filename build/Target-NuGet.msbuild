@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Package" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectName>UmbracoActiveDirectoryProvider</ProjectName>
+  </PropertyGroup>
+  <Target Name="Package">
+    <Exec Command="..\nuget\NuGet.exe pack ..\build\Package.nuspec -Version $(Version) -Properties Configuration=Release" />
+    <Copy SourceFiles="..\build\$(ProjectName).$(Version).nupkg" DestinationFolder="..\Output" />
+    <Delete Files="..\build\$(ProjectName).$(Version).nupkg"></Delete>
+  </Target>
+</Project>
