@@ -3,83 +3,84 @@ using System.Collections.Specialized;
 using System.Configuration.Provider;
 using System.Web.Security;
 using Umbraco.Core.Logging;
-using Umbraco.Web;
-using Umbraco.Web.Security;
+using Umbraco.Web.Security.Providers;
 
 namespace UmbracoActiveDirectoryProvider
 {
-    public class UmbracoActiveDirectoryMembershipProvider : ActiveDirectoryMembershipProvider
+    public class UmbracoActiveDirectoryMembershipProvider : MembersMembershipProvider
     {
-        private string m_DefaultMemberType;
+        private string adProviderName;
 
         public override void Initialize(string name, NameValueCollection config)
         {
             if (config == null)
                 return;
 
-            m_DefaultMemberType = config["defaultMemberType"];
+            adProviderName = config["adProviderName"];
 
-            if (String.IsNullOrEmpty(m_DefaultMemberType))
-                throw new ProviderException("The attribute 'defaultMemberType' is missing or empty.");
+            if (String.IsNullOrEmpty(adProviderName))
+                throw new ProviderException("The attribute 'adProviderName' is missing or empty.");
 
-            // Remove config attribute as the AD membership provider
-            // doesn't like other attributes
-            config.Remove("defaultMemberType");
+            config.Remove("adProviderName");
 
             base.Initialize(name, config);
         }
 
         public override bool ValidateUser(string username, string password)
         {
-            var retval = base.ValidateUser(username, password);
+            MembershipProvider ADProvider = Membership.Providers[adProviderName];
+            if(ADProvider == null)
+                throw new ProviderException("The Active Directory provider was not load.");
 
-            // Find the Active Directory member
-            var adMember = GetUser(username, false);
+            if (!ADProvider.ValidateUser(username, password))
+                return false;
+
+            MembershipUser adMember = ADProvider.GetUser(username, false);
             if (adMember == null)
                 return false;
 
-            return true;
+            if (base.GetUser(username, false) != null)
+                return true;
 
-            //// Login has to be valid and we need to have Umbraco 
-            //// member's membership provider present
-            //if (retval && Membership.Providers[Umbraco.Core.Constants.Conventions.Member.UmbracoMemberProviderName] != null)
-            //{
-            //    var provider = Membership.Providers[Umbraco.Core.Constants.Conventions.Member.UmbracoMemberProviderName];
+            try
+            {
+                MembershipCreateStatus status;
 
-            //    // If we already have an Umbraco member for the valid log
-            //    // credentials, do not create the member again
-            //    if (provider.GetUser(username, false) != null)
-            //        return true;
+                base.CreateUser(adMember.UserName, password, adMember.Email, adMember.PasswordQuestion, null, adMember.IsApproved, null, out status);
 
-            //    try
-            //    {
-            //        var helper = new MembershipHelper(UmbracoContext.Current);
+                return status == MembershipCreateStatus.Success;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.Error<UmbracoActiveDirectoryMembershipProvider>("Error while creating AD User as an Umbraco Member.", ex);
+            }
 
-            //        var model = helper.CreateRegistrationModel(m_DefaultMemberType);
-            //        model.Username = username;
-            //        model.Password = password;
-            //        model.Email = adMember.Email;
-            //        model.UsernameIsEmail = false;
-            //        model.Name = username;
+            return false;
+        }
 
-            //        // Create the new ad member in umbraco
-            //        MembershipCreateStatus status;
-            //        helper.RegisterMember(model, out status);
+        public override MembershipUser CreateUser(string username, string password, string email, string passwordQuestion, string passwordAnswer, bool isApproved, object providerUserKey, out MembershipCreateStatus status)
+        {
+            status = MembershipCreateStatus.UserRejected;
+            return null;
+        }
 
-            //        // If we haven't created the member correctly, return an
-            //        // unsuccessful login
-            //        return status == MembershipCreateStatus.Success;
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        LogHelper.Error<UmbracoActiveDirectoryMembershipProvider>("Error while creating AD User as an Umbraco Member.", ex);
-            //    }
-            //}
+        public override bool ChangePassword(string username, string oldPassword, string newPassword)
+        {
+            return false;
+        }
 
-            //// No matter if retval is true or false, we have to return
-            //// false because we can't create or make sure the ad user 
-            //// exists as an Umbraco member
-            //return false;
+        public override bool ChangePasswordQuestionAndAnswer(string username, string password, string newPasswordQuestion, string newPasswordAnswer)
+        {
+            return false;
+        }
+
+        public override string ResetPassword(string username, string answer)
+        {
+            return "It's not work for Active Directory provider.";
+        }
+
+        public override void UpdateUser(MembershipUser user)
+        {
         }
     }
 }

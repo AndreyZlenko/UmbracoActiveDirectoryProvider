@@ -3,7 +3,7 @@
   <metadata>
     <title>Active Directory Providers</title>
     <id>UmbracoActiveDirectoryProvider</id>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <authors>zzz</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Umbraco Active Directory Provider</description>

@@ -2,7 +2,7 @@
 
 set msbuild="C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe"
 
-set VERSION=1.0.0
+set VERSION=1.1.0
 
 REM --------------------------------
 REM Build solution
